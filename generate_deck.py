@@ -764,80 +764,64 @@ def main():
         "icon_2_label"
     )
 
-        # -----------------------------------------------------
+     
+    # -----------------------------------------------------
     # Slide 3: Customer Experience
     # -----------------------------------------------------
+    # Find highest and lowest NPS regions dynamically
+    best_nps_row = c_now.loc[c_now["NPS"].idxmax()]
+    worst_nps_row = c_now.loc[c_now["NPS"].idxmin()]
 
-        # -----------------------------------------------------
-    # Slide 3: Customer Experience
-    # -----------------------------------------------------
+    best_region = best_nps_row["Region"]
+    best_nps = best_nps_row["NPS"]
 
-    slide3 = presentation.slides[2]
+    worst_region = worst_nps_row["Region"]
+    worst_nps = worst_nps_row["NPS"]
 
-    customer_headline = create_customer_headline(
-        c_now,
-        c_prev
-    )
-
+    # Insight-led headline
     fill_shape(
-        slide3,
+        presentation.slides[2],
         "title_3",
-        customer_headline
+        f"Customer Advocacy Diverges Sharply, with {worst_region} "
+        f"Trailing Other Regions"
     )
 
-    # Same title formatting as Slide 2
-    format_content_text(
-        slide3,
-        "title_3",
-        CONTENT_TITLE_SIZE,
-        CONTENT_TITLE_COLOR,
-        True
-    )
-
-    remove_shape(
-        slide3,
-        "chart_customer_label"
-    )
-
+    # Chart
     set_chart(
-        slide3,
+        presentation.slides[2],
         "chart_customer",
         c_now,
         "NPS",
-        "Average NPS by Region"
+        f"NPS by Region | {latest_q}"
     )
 
+    # Identify the other regions for supporting insight
+    other_regions = c_now[
+        ~c_now["Region"].isin([best_region, worst_region])
+    ].sort_values("NPS", ascending=False)
+
+    other_region_text = ", ".join(
+        f"{row['Region']} ({row['NPS']:.0f})"
+        for _, row in other_regions.iterrows()
+    )
+
+    # Dynamic insights
     fill_shape(
-        slide3,
+        presentation.slides[2],
         "insights_customer",
-        f"• Average NPS: {fmt(nps)}.\n"
-        f"• Previous-quarter NPS: {fmt(previous_nps)}.\n"
-        f"• NPS change: {fmt(nps_change)} points.\n"
-        f"• Average CSAT: {fmt(csat, '%')}.\n"
-        f"• Monitor delivery days and support-ticket "
-        f"volume by region."
-    )
 
-    # Same insight formatting as Slide 2
-    format_content_text(
-        slide3,
-        "insights_customer",
-        CONTENT_INSIGHT_SIZE,
-        CONTENT_TEXT_COLOR,
-        False
-    )
+        f"• {best_region} leads customer advocacy with NPS "
+        f"{best_nps:.0f}.\n"
 
-    add_icon_in_placeholder(
-        slide3,
-        "icon_3",
-        "customer_star.png",
-        width=CONTENT_ICON_SIZE,
-        remove_placeholder=True
-    )
+        f"• {worst_region} trails significantly at NPS "
+        f"{worst_nps:.0f}.\n"
 
-    remove_shape(
-        slide3,
-        "icon_3_label"
+        f"• Other regions remain stronger: "
+        f"{other_region_text}.\n"
+
+        f"• Overall average NPS improved from "
+        f"{previous_nps:.2f} to {nps:.2f}, "
+        f"a {nps_change:+.2f}-point QoQ change."
     )
 
        # -----------------------------------------------------
